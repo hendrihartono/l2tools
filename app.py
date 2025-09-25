@@ -8,12 +8,12 @@ import re
 import base64
 
 from services.base64_service import decode_base64_to_bytes
-from services.csv_service   import auto_convert
-from services.sql_service   import format_sql
+from services.csv_service import auto_convert
+from services.sql_service import format_sql
 from services.daily_fds_service import process_daily_fds_csv
 
 app = Flask(__name__)
-# Ganti dengan secret yang panjang/acak untuk produksi
+# Ganti dengan secret key yang panjang/acak di produksi
 app.secret_key = "ganti_dengan_secret_yang_aman"
 
 
@@ -22,6 +22,7 @@ app.secret_key = "ganti_dengan_secret_yang_aman"
 # ======================================================
 @app.route("/")
 def index():
+    """Halaman menu utama."""
     return render_template("index.html")
 
 
@@ -30,19 +31,39 @@ def index():
 # ======================================================
 @app.route("/base64", methods=["GET", "POST"])
 def base64_page():
-    if request.method == "POST":
-        text = request.form.get("b64text", "").strip()
-        action = request.form.get("action", "show")  # default action
+    """
+    Dapat menerima input berupa:
+      • string base64 langsung
+      • atau JSON {"image":"..."} yang berisi field 'image'
+    Tombol:
+      • Decode & Tampilkan  → menampilkan gambar pada halaman
+      • Decode & Download   → mengunduh hasil decode sebagai PNG
+    """
+    decoded_image = None
+    b64text = ""
 
-        if not text:
-            flash("Masukkan Base64 text dulu", "danger")
+    if request.method == "POST":
+        action = request.form.get("action", "show")
+        b64text = request.form.get("b64text", "").strip()
+
+        if not b64text:
+            flash("Masukkan Base64 text atau JSON dulu", "danger")
             return redirect(url_for("base64_page"))
 
         try:
-            img_bytes = decode_base64_to_bytes(text)
+            # Jika input berupa JSON {"image":"..."} ekstrak field image
+            if b64text.startswith("{") and "image" in b64text:
+                import json
+                try:
+                    parsed = json.loads(b64text)
+                    if isinstance(parsed, dict) and "image" in parsed:
+                        b64text = str(parsed["image"])
+                except Exception:
+                    pass  # Jika gagal parse JSON, gunakan teks apa adanya
+
+            img_bytes = decode_base64_to_bytes(b64text)
 
             if action == "download":
-                # Download image sebagai file png
                 return send_file(
                     io.BytesIO(img_bytes),
                     mimetype="image/png",
@@ -50,16 +71,13 @@ def base64_page():
                     download_name="decoded.png"
                 )
             else:
-                # Tampilkan langsung di halaman dalam tag <img>
-                b64_str = base64.b64encode(img_bytes).decode("utf-8")
-                return render_template("base64.html", decoded_image=b64_str, b64text=text)
+                # Encode ulang untuk <img src="data:...">
+                decoded_image = base64.b64encode(img_bytes).decode("utf-8")
 
         except Exception as e:
             flash(f"Gagal decode: {e}", "danger")
-            return redirect(url_for("base64_page"))
 
-    # GET method: render halaman kosong
-    return render_template("base64.html")
+    return render_template("base64.html", decoded_image=decoded_image, b64text=b64text)
 
 
 # ======================================================
@@ -67,6 +85,7 @@ def base64_page():
 # ======================================================
 @app.route("/csv-excel", methods=["GET", "POST"])
 def csv_excel_page():
+    """Upload file CSV atau Excel, otomatis konversi ke format lawannya."""
     if request.method == "POST":
         f = request.files.get("file")
         if not f:
@@ -92,12 +111,12 @@ def csv_excel_page():
 @app.route("/sql-formatter", methods=["GET", "POST"])
 def sql_formatter_page():
     """
-    Hanya butuh template (A/B) dan raw_input.
+    Menghasilkan query SQL dari template (A/B) dan daftar input.
     """
     result = None
     if request.method == "POST":
         template = request.form.get("template")
-        raw      = request.form.get("raw_input", "")
+        raw = request.form.get("raw_input", "")
         try:
             result = format_sql(template, raw)
         except Exception as e:
@@ -127,8 +146,7 @@ def daily_fds_page():
         if not zip_name:
             zip_name = "daily fds images"
 
-        # Izinkan huruf, angka, spasi, dash, underscore dan titik
-        # Spasi dipertahankan
+        # Hanya izinkan huruf/angka/spasi/underscore/dash/titik
         safe_name = re.sub(r"[^A-Za-z0-9 _\-.]", "", zip_name).strip() + ".zip"
 
         try:
@@ -150,5 +168,6 @@ def daily_fds_page():
 #   ENTRY POINT
 # ======================================================
 if __name__ == "__main__":
-    # Gunakan host='0.0.0.0' agar bisa diakses dari jaringan lokal
-    app.run(debug=True)
+    # host='0.0.0.0' agar dapat diakses dari jaringan lokal
+    # port bisa diubah sesuai kebutuhan, default 5000
+    app.run(host="0.0.0.0", port=5000, debug=True)

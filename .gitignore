@@ -1,0 +1,31 @@
+venv/
+
+# === Python build / cache ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+
+# === Virtual environments ===
+venv/
+env/
+.venv/
+
+# === Environment / secrets ===
+.env
+*.env
+
+# === OS / Editor files ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# === Logs / temp ===
+*.log
+*.sqlite
+*.db
+*.bak
