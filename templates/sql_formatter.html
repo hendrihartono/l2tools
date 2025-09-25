@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}SQL Formatter{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">SQL Formatter</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post">
+    <div class="mb-3">
+      <label for="template" class="form-label">Pilih Template</label>
+      <select class="form-select" id="template" name="template" required>
+        <option value="A" {% if request.form.get('template') == 'A' %}selected{% endif %}>GET NIK/ID Number</option>
+        <option value="B" {% if request.form.get('template') == 'B' %}selected{% endif %}>GET FR + KTP</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="raw_input" class="form-label">Daftar NIK / ID</label>
+      <textarea class="form-control" id="raw_input" name="raw_input" rows="6" placeholder="Pisahkan dengan spasi atau newline..." required>{{ request.form.get('raw_input', '') }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">🔧 Format SQL</button>
+  </form>
+
+  {% if result %}
+  <hr class="my-4">
+  <h5>Hasil SQL</h5>
+  <textarea class="form-control" rows="12" readonly>{{ result }}</textarea>
+  {% endif %}
+</div>
+{% endblock %}

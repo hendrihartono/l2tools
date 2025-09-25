@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Base64 → Image Decoder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Base64 → Image Decoder</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post" id="b64form">
+    <div class="mb-3">
+      <label for="b64text" class="form-label">Masukkan Text Base64</label>
+      <textarea class="form-control" id="b64text" name="b64text" rows="8" placeholder="Paste Base64 encoded text di sini..." required>{{ b64text if b64text else '' }}</textarea>
+    </div>
+
+    <div class="mb-3 d-flex gap-2">
+      <button type="submit" name="action" value="show" class="btn btn-success">🔍 Decode & Tampilkan</button>
+      <button type="submit" name="action" value="download" class="btn btn-primary">📥 Decode & Download</button>
+    </div>
+  </form>
+
+  {% if decoded_image %}
+  <hr>
+  <h4>Hasil Decode:</h4>
+  <img src="data:image/png;base64,{{ decoded_image }}" alt="Decoded Image" class="img-fluid border rounded" style="max-height:400px;">
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Daily FDS Image Extractor{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Daily FDS Image Extractor</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="file" class="form-label">Upload File CSV dengan kolom: <code>KTP_base64</code>, <code>FR_base64</code>, dan <code>NIK</code></label>
+      <input class="form-control" type="file" id="file" name="file" accept=".csv" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="zip_name" class="form-label">Nama file ZIP hasil (optional)</label>
+      <input type="text" class="form-control" id="zip_name" name="zip_name" placeholder="Misal: daily_fds_images.zip" value="{{ request.form.get('zip_name', '') }}">
+      <div class="form-text">File ZIP akan berisi gambar hasil decode.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">📦 Proses & Download ZIP</button>
+  </form>
+</div>
+{% endblock %}

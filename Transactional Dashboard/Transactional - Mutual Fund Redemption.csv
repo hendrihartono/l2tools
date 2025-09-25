@@ -1,0 +1,4 @@
+﻿"Surrounding Message"|"Surrounding Status Code"|"Count of records"|Percentage
+SUCCESS|00|181|"81.90%"
+"YOU DONT HAVE ENOUGH UNIT BALANCE TO DO THIS TRANSACTION"|421|38|"17.19%"
+"General Error"|99|2|"0.90%"
